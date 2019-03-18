@@ -8,7 +8,7 @@
     "eth-crypto": "^1.3.2",
     "nodemon": "^1.18.10",
     "siginfo": "^1.0.1",
-    "sodium-native": "^2.0.0"
+    "sodium-native": "^2.3.0"
   },
   "devDependencies": {},
   "scripts": {},
