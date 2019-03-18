@@ -71,7 +71,7 @@ const server = net.createServer(function (socket) {
     switch (msg.msg.cmd) {
       case 'register':
         console.log("Registering new customer!");
-        console.log("Welcome to whatever the hell bank");
+        console.log("Welcome to the bank");
         if (log.filter(e => e.id == msg.id).length == 0){
           console.log("Your address is a valid address");
           appendToTransactionLog(msg.msg)
