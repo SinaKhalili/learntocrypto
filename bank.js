@@ -74,7 +74,7 @@ const server = net.createServer(function (socket) {
         console.log("Welcome to whatever the hell bank");
         if (log.filter(e => e.id == msg.id).length == 0){
           console.log("Your address is a valid address");
-          appendToTransactionLog(msg)
+          appendToTransactionLog(msg.msg)
           writeFileToDisk();
           socket.end({ cmd: 'registration success' });
         }
@@ -83,20 +83,21 @@ const server = net.createServer(function (socket) {
         }
       break
       case 'balance':
-        if (!verifyTeller(msg)) { socket.end({ cmd: 'bad signature' }); };
+        if (!verifyTeller(msg)) { socket.end({ cmd: 'bad signature' }); break;};
         socket.end({cmd: 'balance', balance: log.filter(e => e.id == msg.id).reduce(reduceLog, 0)});
       break
       case 'deposit':
-        if (!verifyTeller(msg)) { socket.end({cmd:'bad signature'}); };
+        if (!verifyTeller(msg)) { socket.end({cmd:'bad signature'}); break;};
         appendToTransactionLog(msg.msg);
 	      writeFileToDisk();
         socket.end({cmd: 'balance', balance: log.filter(e => e.id == msg.id).reduce(reduceLog, 0)});
       break
       case 'withdraw': 
-        if(msg.amount <= log.filter(e => e.id == msg.id).reduce(reduceLog, 0)){
+        if (!verifyTeller(msg)) { socket.end({ cmd: 'bad signature' }); break; };
+        if(msg.msg.amount <= log.filter(e => e.id == msg.id).reduce(reduceLog, 0)){
               appendToTransactionLog(msg.msg);
               writeFileToDisk();
-              socket.end({cmd: 'balance', balance: log.reduce(reduceLog, 0)});
+          socket.end({ cmd: 'balance', balance: log.filter(e => e.id == msg.id).reduce(reduceLog, 0)});
             }
         else{
           socket.end({cmd: 'withdrawl refused', balance: log.filter(e => e.id == msg.id).reduce(reduceLog, 0)})
@@ -106,6 +107,7 @@ const server = net.createServer(function (socket) {
         socket.end({cmd: 'error', msg: 'Unknown command'});
       break
     }
+    // console.log(log)
   })
 })
 

@@ -1,6 +1,6 @@
 const ethc = require('eth-crypto');
-const net = require('net')
-const jsonStream = require('duplex-json-stream')
+const jsonStream = require('duplex-json-stream');
+const net = require('net');
 
 const client = jsonStream(net.connect(3876))
 const argv = process.argv.slice(2)
@@ -8,14 +8,7 @@ const argv = process.argv.slice(2)
 let idc = argv[2]; 
 let command = argv[0];
 let privKey = argv[3];
-if (!String.prototype.startsWith) {
-  Object.defineProperty(String.prototype, 'startsWith', {
-    value: function (search, pos) {
-      pos = !pos || pos < 0 ? 0 : +pos;
-      return this.substring(pos, pos + search.length) === search;
-    }
-  });
-}
+
 client.on('data', function (msg) {
   console.log('Teller received:', msg);
 });
@@ -33,28 +26,53 @@ switch (command) {
     let amount = parseFloat(argv[1]);
     let msg =  { id: idc, cmd: 'deposit', amount: amount };
     let msghash = ethc.hash.keccak256(JSON.stringify(msg));
+    signature = ethc.sign(
+      privKey,
+      msghash 
+    )
     client.end({
       id : idc,
       msg : msg,
       msghash : msghash,
-      sig : ethc.sign(
-        privKey,
-        ethc
-      )
+      sig : signature
     })
     break
 
   case 'balance':
-    client.end({id: id, cmd: 'balance'})
+    idc = argv[1];
+    privKey = argv[2];
+    let msgc = { id: idc, cmd: 'balance' };
+    let msghashc = ethc.hash.keccak256(JSON.stringify(msgc));
+    signature = ethc.sign(
+      privKey,
+      msghashc
+    )
+    client.end({
+      id: idc,
+      msg: msgc,
+      msghash: msghashc,
+      sig: signature
+    })
     break
   case 'withdraw':
-    amount = parseFloat(argv[2]);
-    client.end({id: id, cmd: 'withdraw', amount: amount});
+    let amountw = parseFloat(argv[1]);
+    let msgw = { id: idc, cmd: 'withdraw', amount: amountw };
+    let msghashw = ethc.hash.keccak256(JSON.stringify(msgw));
+    signature = ethc.sign(
+      privKey,
+      msghashw
+    )
+    client.end({
+      id: idc,
+      msg: msgw,
+      msghash: msghashw,
+      sig: signature
+    })
     break
 
   case 'help':
   default:
-    console.log('node register [ID] or if you have id,');
-    console.log('node teller.js [ID] [CMD] [PRIVATE KEY]');
+    console.log('node register or if you have id,');
+    console.log('node teller.js [CMD] [ID] [PRIVATE KEY]');
     console.log('Private key is used to sign transactions');
 }
